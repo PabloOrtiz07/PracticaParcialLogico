@@ -36,56 +36,49 @@ exclusivo(Persona):-
     not((usuario(Persona,OtraRed,_),
     OtraRed \= UnicaRed)).
 
-contenidos(ana,tiktok,([beto,evelyn],1)).
-contenidos(ana,tiktok,([ana],1)).
-contenidos(ana,instagram,([ana])).
-contenidos(beto,instagram,([])).
-contenidos(evelyn,instagram,([evelyn,cami])).
-contenidos(cami,twitch,(lol)).
+contenidos(ana,tiktok,video([beto,evelyn],1)).
+contenidos(ana,tiktok,video([ana],1)).
+contenidos(ana,instagram,foto([ana])).
+contenidos(beto,instagram,foto([])).
+contenidos(evelyn,instagram,foto([evelyn,cami])).
+contenidos(cami,twitch,stream(lol)).
+contenidos(cami,youtube,video([cami,5])).
 
 
+
+aparecerContenido(Persona,OtraPersona):-
+    contenidos(Persona,_,video(ListaPersona,1)),
+    member(OtraPersona,ListaPersona).
+aparecerContenido(Persona,OtraPersona):-
+    contenidos(Persona,_,foto([ListaPersona])),
+    member(OtraPersona,ListaPersona).
+aparecerContenido(Persona,OtraPersona):-
+    contenidos(Persona,_,stream(_)),
+    OtraPersona=Persona.
+
+colaboran(Persona,OtraPersona):-
+    aparecerContenido(Persona,OtraPersona),
+    Persona\=OtraPersona.
 
 tematicas(juego,lol).
 tematicas(juego,minecraft).
 tematicas(juego,aoe).
 
-adictiva(Red):-
-    queTipoDeRed(video,Red),
-    videoAdictivo(Red).
-adictiva(Red):-
-    queTipoDeRed(stream,Red),
-    stream(Red).
-adictiva(Red):-
-    queTipoDeRed(foto,Red),
-    foto(Red).
 
-videoAdictivo(Red):-
-    contenidos(_,Red,(_,TiempoVideo)),
-    TiempoVideo < 3.
+adictiva(Red):-
+    contenidos(_,Red,_),
+    forall(contenidos(_,Red,_),contenidosAdictivo(Red)).
 
-stream(Red):-
-    contenidos(_,Red,Tematica),
+contenidoAdictivo(Red):-
+    contenidos(_,Red,video(_,Duracion)),
+    Duracion < 3.
+contenidosAdictivo(Red):-
+    contenidos(_,Red,stream(Tematica)),
     tematicas(juego,Tematica).
-
-foto(Red):-
-    contenidos(_,Red,ListaFotos),
-    length(ListaFotos, CuantasPersonas),
-    CuantasPersonas < 4.
-
-colaboran(Persona,PersonaDos):-
-    queTipoDeRed(video,_),
-    contenidos(Persona,_,(ListaPersona,_)),
-    member(PersonaDos,ListaPersona).
-colaboran(Persona,PersonaDos):-
-    queTipoDeRed(foto,_),
-    contenidos(Persona,_,(ListaPersona)),
-    member(PersonaDos,ListaPersona).
-colaboran(Persona,PersonaDos):-
-    contenidos(Persona,_,_),
-    queTipoDeRed(stream,_),
-    PersonaDos==Persona.
-colaboran(Persona,PersonaDos):-
-    colaboran(PersonaDos,Persona).
+contenidosAdictivo(Red):-
+    contenidos(_,Red,foto(ListaPersonas)),
+    length(ListaPersonas,TotalPersonas),
+    TotalPersonas < 4.
 
 caminoALaFama(Persona):-
     not(influencer(Persona)),
